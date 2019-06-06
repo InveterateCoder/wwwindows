@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8"/>
+        <meta name="viewport" content="width=device-width"/>
+        <title>Window</title>
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+        <style>
+            *{
+                box-sizing: border-box;
+            }
+            body{
+                margin: 0;
+                padding: 0;
+            }
+            #desktop{
+                background-color: cornflowerblue;
+                position: relative;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                overflow: hidden;
+            }
+            .window{
+                position: absolute;
+                width: 600px;
+                height: 400px;
+                background-color: gainsboro;
+                position: absolute;
+                left: 50px;
+                top: 50px;
+                -webkit-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+                box-shadow: 0px 0px 20px 1px rgba(0,0,0,0.35);
+                border: 1px solid rgba(0,0,0,0.35);
+            }
+            .window > div{
+                width: 100%;
+                height: 32px;
+                background-color: silver;
+                margin: 0;
+                padding: 0;
+            }
+            .menu{
+                float: right;
+                padding: 3px 10px 0 10px;
+                margin: 0;
+                color:rgba(0,0,0,0.7);
+            }
+            .close:hover{
+                background-color: rgba(255,0,0,0.7);
+            }
+            .fscreen:hover{
+                background-color: rgb(178,178,178);
+            }
+        </style>
+        <script>
+            var _moveEvent, offsetX = 0, offsetY = 0, isScroll = false, locked = false, x, y
+            const gap = 6
+            var desktop
+            var min_window_width = 200, min_window_height = 200
+            const act = {
+                left: 1,
+                left_top: 2,
+                left_bottom: 3,
+                right: 4,
+                right_top: 5,
+                right_bottom: 6,
+                top: 7,
+                bottom: 8,
+                move: 9,
+                none: 0
+            }
+            var desktop_width, desktop_height
+            var action = act.none
+            $(document).ready(() => {
+                desktop = $("#desktop")
+                $(desktop).height(screen.height).width(screen.width)
+                desktop_width = $(desktop).width()
+                desktop_height = $(desktop).height()
+                $(document).mousemove(move_mouse)
+            })
+            $(document).scroll(e => {
+                let diffX = window.pageXOffset - offsetX
+                let diffY = window.pageYOffset - offsetY
+                offsetX = window.pageXOffset
+                offsetY = window.pageYOffset
+                _moveEvent.pageX += diffX
+                _moveEvent.pageY += diffY
+                move_mouse(_moveEvent, false)
+            })
+            function move_window(_wdata, left, top, width, height){
+                if(left != 0){
+                    _wdata.left += left
+                    $(_wdata.element).css("left", _wdata.left)
+                }
+                if(top != 0){
+                    _wdata.top += top
+                    $(_wdata.element).css("top", _wdata.top)
+                }
+                if(width != 0){
+                    _wdata.width += width
+                    $(_wdata.element).css("width", _wdata.width)
+                }
+                if(height != 0){
+                    _wdata.height += height
+                    $(_wdata.element).css("height", _wdata.height)
+                }
+            }
+            function move_mouse(e, read = true){
+                if(read) _moveEvent = e
+                if(engaged && action != act.none && !locked && mouseon != null){
+                    let _wdata = windows[mouseon], diffX, diffY, neg, xGo, yGo
+                    switch(action){
+                        case act.move:
+                            diffX = e.pageX - _wdata.left - x
+                            diffY = e.pageY - _wdata.top - y
+                            move_window(_wdata, diffX, diffY, 0, 0)
+                            break;
+                        case act.right:
+                            diffX = e.pageX - (_wdata.left + _wdata.width)
+                            if(_wdata.width + diffX >= min_window_width && _wdata.width + diffX <= desktop_width)
+                                move_window(_wdata, 0, 0, diffX, 0)
+                            break;
+                        case act.left:
+                            diffX = e.pageX - _wdata.left
+                            neg = diffX * -1
+                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
+                                move_window(_wdata, diffX, 0, neg, 0)
+                            break;
+                        case act.bottom:
+                            diffY = e.pageY - (_wdata.top + _wdata.height)
+                            if(_wdata.height + diffY >= min_window_height && _wdata.height + diffY <= desktop_height)
+                                move_window(_wdata, 0, 0, 0, diffY)
+                            break;
+                        case act.top:
+                            diffY = e.pageY - _wdata.top
+                            neg = diffY * -1
+                            if(_wdata.height + neg >= min_window_height && _wdata.height + neg <= desktop_height)
+                                move_window(_wdata, 0, diffY, 0, neg)
+                            break
+                        case act.left_top:
+                            xGo = yGo = false
+                            diffX = e.pageX - _wdata.left
+                            neg = diffX * -1
+                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
+                                xGo = true
+                            diffY = e.pageY - _wdata.top
+                            let neg2 = diffY * -1
+                            if(_wdata.height + neg2 >= min_window_height && _wdata.height + neg2 <= desktop_height)
+                                yGo = true
+                            move_window(_wdata, xGo?diffX:0, yGo?diffY:0, xGo?neg:0, yGo?neg2:0)
+                            break;
+                        case act.left_bottom:
+                            xGo = yGo = false
+                            diffX = e.pageX - _wdata.left
+                            neg = diffX * -1
+                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
+                                xGo = true
+                            diffY = e.pageY - (_wdata.top + _wdata.height)
+                            if(_wdata.height + diffY >= min_window_height && _wdata.height + diffY <= desktop_height)
+                                yGo = true
+                            move_window(_wdata, xGo?diffX:0, 0, xGo?neg:0, yGo?diffY:0)
+                            break;
+                        case act.right_top:
+                            xGo = yGo = false
+                            
+                    }
+                }
+                else if(mouseon != null && !locked){
+                    let _wdata = windows[mouseon]
+                    let bottom = _wdata.top + _wdata.height
+                    let right = _wdata.left + _wdata.width
+                    if(_wdata != null){
+                        if(e.pageX >= _wdata.left && e.pageX <= _wdata.left + gap){
+                            x = e.pageX - _wdata.left
+                            y = e.pageY - _wdata.top
+                            if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + gap){
+                                // left - top
+                                $(desktop).css("cursor","nwse-resize")
+                                action = act.left_top
+                            }
+                            else if(e.pageY <= bottom && e.pageY >= bottom - gap){
+                                // left - bottom
+                                $(desktop).css("cursor","nesw-resize")
+                                action = act.left_bottom
+                            }
+                            else{
+                                // left
+                                $(desktop).css("cursor","ew-resize")
+                                action = act.left
+                            }
+                        }
+                        else if(e.pageX <= right && e.pageX >= right - gap){
+                            x = e.pageX - _wdata.left
+                            y = e.pageY - _wdata.top
+                            if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + gap){
+                                // right - top
+                                $(desktop).css("cursor","nesw-resize")
+                                action = act.right_top
+                            }
+                            else if(e.pageY <= bottom && e.pageY >= bottom - gap){
+                                // right - bottom
+                                $(desktop).css("cursor","nwse-resize")
+                                action = act.right_bottom
+                            }
+                            else{
+                                // right
+                                $(desktop).css("cursor","ew-resize")
+                                action = act.right
+                            }
+                        }
+                        else if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + 30){
+                            x = e.pageX - _wdata.left
+                            y = e.pageY - _wdata.top
+                            if(e.pageY <= _wdata.top + gap){
+                                // top
+                                $(desktop).css("cursor","ns-resize")
+                                action = act.top
+                            }
+                            else{
+                                // move
+                                $(desktop).css("cursor","default")
+                                action = act.move
+                            }
+                        }
+                        else if(e.pageY <= bottom && e.pageY >= bottom - gap){
+                            x = e.pageX - _wdata.left
+                            y = e.pageY - _wdata.top
+                            // bottom
+                            $(desktop).css("cursor","ns-resize")
+                            action = act.bottom
+                        }
+                        else{
+                            // else
+                            $(desktop).css("cursor","default")
+                            action = act.none
+                            if(engaged)
+                                locked = true;
+                        }
+                    }
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <div id="desktop" onmousedown="Engage(event)" onmouseup="Disengage(event)">
+            <button onclick="Add()" style="background-color: transparent;"><i class="material-icons">add</i></button>
+        </div>
+        <script>
+            var template = $('<div onmouseover="CatchMouse(this)" onmouseout="LoseMouse(this)" class="window"></div>').append(
+                '<div>'+
+                    '<span onclick="CloseWindow(this)" class="menu close"><i class="material-icons">close</i></span>'+
+                    '<span onclick="ToggleFullScreen(this)" class="menu fscreen"><i class="material-icons">fullscreen</i></span>'+
+                '</div>')
+            function Window(_element){
+                this.element = _element
+                this.top = parseInt($(_element).css("top"))
+                this.left = parseInt($(_element).css("left"))
+                this.width = parseInt($(_element).css("width"))
+                this.height = parseInt($(_element).css("height"))
+                this.z = GetNewZIndex()
+            }
+            var active //active window --------------------------
+            var mouseon = null
+            var mouseover = null
+            var mouseon_remove = null
+            var engaged = false
+            var windows = {}
+            var fullscreen_window = null
+            var fs_prev_top, fs_prev_left, fs_prev_width, fs_prev_height
+            function DisableContext(){
+                return false
+            }
+            function Add(){
+                let id = GetAvailWindowId()
+                $(template).attr("id", id)
+                $(template).clone().appendTo($(desktop))
+                windows[id] = new Window(document.getElementById(id))
+                $(windows[id].element).css({"z-index": windows[id].z, "cursor": "inherit"})
+                $(windows[id].element).on("contextmenu", DisableContext)
+                active = id
+            }
+            function CatchMouse(e){
+                mouseover = $(e).attr("id")
+                if(!engaged)
+                    mouseon = mouseover
+            }
+            function LoseMouse(e){
+                mouseover = null
+                let checker = $(e).attr("id")
+                if(!engaged){
+                    if(mouseon == checker){
+                        mouseon = null
+                        $(desktop).css("cursor","default")
+                        action = act.none
+                    }
+                }
+                else
+                    if(mouseon == checker)
+                        mouseon_remove = mouseon
+            }
+            function Engage(e){
+                if(e.button == 0)
+                    engaged = true;
+            }
+            function Disengage(e){
+                if(e.button == 0){
+                    engaged = false;
+                    locked = false;
+                    if(mouseon_remove == mouseon && mouseon_remove != mouseover){
+                        mouseon = null
+                        action = act.none
+                        $(desktop).css("cursor","default")
+                    }
+                    mouseon_remove = null
+                }
+            }
+            function GetAvailWindowId(){
+                _id = 1
+                for(id in windows){
+                    if(id != _id)
+                        return _id;
+                    _id++
+                }
+                return _id;
+            }
+            function GetNewZIndex(){
+                let index = 1;
+                for(id in windows){
+                    let z = windows[id].z
+                    if(z >= index){
+                        index = z
+                        index++
+                        continue
+                    }
+                }
+                return index
+            }
+            function ActivateWindow(_window){
+                // remember what it's for
+            }
+            function CloseWindow(_window_btn){
+
+                let _window = $(_window_btn).parents(".window")
+                delete windows[$(_window).attr("id")]
+                _window.remove()
+            }
+            function ToggleFullScreen(_window_btn){
+                if(fullscreen_window == null){
+                    fullscreen_window = $(_window_btn).parents(".window")
+                    $(fullscreen_window).css("border","none")
+                    fs_prev_left = $(fullscreen_window).css("left")
+                    $(fullscreen_window).css("left", 0)
+                    fs_prev_top = $(fullscreen_window).css("top")
+                    $(fullscreen_window).css("top", 0)
+                    fs_prev_height = $(fullscreen_window).height()
+                    $(fullscreen_window).height(screen.height)
+                    fs_prev_width = $(fullscreen_window).width()
+                    $(fullscreen_window).width(screen.width)
+                }
+                else{
+                    $(fullscreen_window).css("border","1px solid rgba(0,0,0,0.35)")
+                    $(fullscreen_window).css("left", fs_prev_left)
+                    $(fullscreen_window).css("top", fs_prev_top)
+                    $(fullscreen_window).height(fs_prev_height)
+                    $(fullscreen_window).width(fs_prev_width)
+                    fullscreen_window = null
+                }
+            }
+        </script>
+    </body>
+</html>
