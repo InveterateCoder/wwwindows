@@ -51,12 +51,6 @@
                 margin: 0;
                 color:rgba(0,0,0,0.7);
             }
-            .close:hover{
-                background-color: rgba(255,0,0,0.7);
-            }
-            .fscreen:hover{
-                background-color: rgb(178,178,178);
-            }
         </style>
         <script>
             var _moveEvent, offsetX = 0, offsetY = 0, isScroll = false, locked = false, x, y
@@ -255,7 +249,13 @@
                             else{
                                 // move
                                 $(desktop).css("cursor","default")
-                                action = act.move
+                                if(closebtn || fsbtn){
+                                    action = act.none
+                                    if(engaged)
+                                        locked = true
+                                }
+                                else
+                                    action = act.move
                             }
                         }
                         else if(e.pageY <= bottom && e.pageY >= bottom - gap){
@@ -284,8 +284,8 @@
         <script>
             var template = $('<div onmouseover="CatchMouse(this)" onmouseout="LoseMouse(this)" class="window"></div>').append(
                 '<div>'+
-                    '<span onclick="CloseWindow(this)" class="menu close"><i class="material-icons">close</i></span>'+
-                    '<span onclick="ToggleFullScreen(this)" class="menu fscreen"><i class="material-icons">fullscreen</i></span>'+
+                    '<span onclick="CloseWindow(this)" onmouseover="CloseHover(this)" onmouseout="CloseOut(this)" class="menu"><i class="material-icons">close</i></span>'+
+                    '<span onclick="ToggleFullScreen(this)" onmouseover="fScreenHover(this)" onmouseout="fScreenOut(this)" class="menu"><i class="material-icons">fullscreen</i></span>'+
                 '</div>')
             function Window(_element){
                 this.element = _element
@@ -303,6 +303,29 @@
             var windows = {}
             var fullscreen_window = null
             var fs_prev_top, fs_prev_left, fs_prev_width, fs_prev_height
+            var closebg, fscreenbg, closebtn = false, fsbtn = false, engbtn = 0
+            function CloseHover(el){
+                closebtn = true
+                if(!engaged || engbtn == 1 && action == act.none){
+                    closebg = el.style.backgroundColor
+                    el.style.backgroundColor = "rgba(255,0,0,0.7)"
+                }
+            }
+            function CloseOut(el){
+                closebtn = false
+                el.style.backgroundColor = closebg
+            }
+            function fScreenHover(el){
+                fsbtn = true
+                if(!engaged || engbtn == 2 && action == act.none){
+                    fscreenbg = el.style.backgroundColor
+                    el.style.backgroundColor = "rgb(178,178,178)"
+                }
+            }
+            function fScreenOut(el){
+                fsbtn = false
+                el.style.backgroundColor = fscreenbg
+            }
             function DisableContext(){
                 return false
             }
@@ -335,8 +358,14 @@
                         mouseon_remove = mouseon
             }
             function Engage(e){
-                if(e.button == 0)
+                if(e.button == 0){
                     engaged = true;
+                    if(closebtn)
+                        engbtn = 1
+                    else if(fsbtn)
+                        engbtn = 2
+                        else engbtn = 0
+                }
             }
             function Disengage(e){
                 if(e.button == 0){
@@ -375,9 +404,11 @@
                 // remember what it's for
             }
             function CloseWindow(_window_btn){
-
+                closebtn = false
                 let _window = $(_window_btn).parents(".window")
                 delete windows[$(_window).attr("id")]
+                if(mouseon == $(_window).attr("id"))
+                    mouseon = null
                 _window.remove()
             }
             function ToggleFullScreen(_window_btn){
