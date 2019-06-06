@@ -404,6 +404,10 @@
                 // remember what it's for
             }
             function CloseWindow(_window_btn){
+                if(action != act.none){
+                    $(desktop).css("cursor","default")
+                    action = act.none
+                }
                 closebtn = false
                 let _window = $(_window_btn).parents(".window")
                 delete windows[$(_window).attr("id")]
