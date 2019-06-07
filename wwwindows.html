@@ -282,7 +282,7 @@
             <button onclick="Add()" style="background-color: transparent;"><i class="material-icons">add</i></button>
         </div>
         <script>
-            var template = $('<div onmouseover="CatchMouse(this)" onmouseout="LoseMouse(this)" class="window"></div>').append(
+            var template = $('<div onmousedown="ActivateWindow(this)" onmouseover="CatchMouse(this)" onmouseout="LoseMouse(this)" class="window"></div>').append(
                 '<div>'+
                     '<span onclick="CloseWindow(this)" onmouseover="CloseHover(this)" onmouseout="CloseOut(this)" class="menu"><i class="material-icons">close</i></span>'+
                     '<span onclick="ToggleFullScreen(this)" onmouseover="fScreenHover(this)" onmouseout="fScreenOut(this)" class="menu"><i class="material-icons">fullscreen</i></span>'+
@@ -293,7 +293,10 @@
                 this.left = parseInt($(_element).css("left"))
                 this.width = parseInt($(_element).css("width"))
                 this.height = parseInt($(_element).css("height"))
-                this.z = GetNewZIndex()
+                this.z = GetTopZIndex()
+            }
+            function trythis(){
+                alert("trythis")
             }
             var active //active window --------------------------
             var mouseon = null
@@ -388,20 +391,26 @@
                 }
                 return _id;
             }
-            function GetNewZIndex(){
-                let index = 1;
+            function GetTopZIndex(){
+                let index = 1, z
                 for(id in windows){
-                    let z = windows[id].z
+                    z = windows[id].z
                     if(z >= index){
                         index = z
                         index++
-                        continue
                     }
                 }
                 return index
             }
             function ActivateWindow(_window){
-                // remember what it's for
+                let z = GetTopZIndex()
+                windows[$(_window).attr("id")].z = z
+                $(_window).css("z-index", z)
+                // jump to OrderZ condition is needed (consider async)
+            }
+            function OrderZ(){
+                let z = 1
+                // Ordering implementation
             }
             function CloseWindow(_window_btn){
                 if(action != act.none){
