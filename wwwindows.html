@@ -109,6 +109,7 @@
                 if(read) _moveEvent = e
                 if(engaged && action != act.none && !locked && mouseon != null){
                     let _wdata = windows[mouseon], diffX, diffY, neg, xGo, yGo
+                    // Resolve minimizing to minimum inconvenience
                     switch(action){
                         case act.move:
                             diffX = e.pageX - _wdata.left - x
@@ -293,12 +294,12 @@
                 this.left = parseInt($(_element).css("left"))
                 this.width = parseInt($(_element).css("width"))
                 this.height = parseInt($(_element).css("height"))
-                this.z = GetTopZIndex()
+                this.z = 0
             }
             function trythis(){
                 alert("trythis")
             }
-            var active //active window --------------------------
+            var activeId = null
             var mouseon = null
             var mouseover = null
             var mouseon_remove = null
@@ -337,9 +338,10 @@
                 $(template).attr("id", id)
                 $(template).clone().appendTo($(desktop))
                 windows[id] = new Window(document.getElementById(id))
+                windows[id].z = GetTopZIndex()
                 $(windows[id].element).css({"z-index": windows[id].z, "cursor": "inherit"})
                 $(windows[id].element).on("contextmenu", DisableContext)
-                active = id
+                activeId = id
             }
             function CatchMouse(e){
                 mouseover = $(e).attr("id")
@@ -402,16 +404,43 @@
                 }
                 return index
             }
-            function ActivateWindow(_window){
+            async function ActivateWindow(_window){
+                let id = $(_window).attr("id")
+                if(activeId == id)
+                    return
                 let z = GetTopZIndex()
-                windows[$(_window).attr("id")].z = z
+                windows[id].z = z
                 $(_window).css("z-index", z)
-                // jump to OrderZ condition is needed (consider async)
+                activeId = id
+                if(windows[activeId].z - Object.keys(windows).length > 100)
+                    await OrderZAsync()
             }
-            function OrderZ(){
-                let z = 1
-                // Ordering implementation
+            function OrderZAsync(){
+                let count = 1, minZ, _id, z, up, _wdata
+                return new Promise(resolve => {
+                    do{
+                        _id = null
+                        up = count - 1
+                        minZ = windows[activeId].z
+                        for(id in windows){
+                            z = windows[id].z
+                            if(z > up && z <= minZ){
+                                minZ = z
+                                _id = id
+                            }
+                        }
+                        if(_id != null){
+                            _wdata = windows[_id]
+                            if(_wdata.z != count){
+                                _wdata.z = count
+                                $(_wdata.element).css("z-index", count)
+                            }
+                            count++
+                        }
+                    } while(_id != null)
+                })
             }
+
             function CloseWindow(_window_btn){
                 if(action != act.none){
                     $(desktop).css("cursor","default")
