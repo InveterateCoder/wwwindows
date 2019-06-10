@@ -104,10 +104,11 @@
                     $(_wdata.element).css("height", _wdata.height)
                 }
             }
+            var xBlocked, yBlocked
             function move_mouse(e, read = true){
                 if(read) _moveEvent = e
                 if(engaged && action != act.none && !locked && mouseon != null){
-                    let _wdata = windows[mouseon], new_width, new_height, diffX, diffY, neg, xBlocked, yBlocked
+                    let _wdata = windows[mouseon], new_width, new_height, diffX, diffY, neg
                     switch(action){
                         case act.move:
                             diffX = e.pageX - _wdata.left - x
