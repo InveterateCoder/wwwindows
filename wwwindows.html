@@ -108,8 +108,7 @@
             function move_mouse(e, read = true){
                 if(read) _moveEvent = e
                 if(engaged && action != act.none && !locked && mouseon != null){
-                    let _wdata = windows[mouseon], diffX, diffY, neg, xGo, yGo
-                    // Resolve minimizing to minimum inconvenience
+                    let _wdata = windows[mouseon], new_width, new_height, diffX, diffY, neg, xBlocked, yBlocked
                     switch(action){
                         case act.move:
                             diffX = e.pageX - _wdata.left - x
@@ -118,81 +117,196 @@
                             break
                         case act.right:
                             diffX = e.pageX - (_wdata.left + _wdata.width)
-                            if(_wdata.width + diffX >= min_window_width && _wdata.width + diffX <= desktop_width)
+                            new_width = _wdata.width + diffX
+                            if(new_width >= min_window_width && new_width <= desktop_width){
+                                xBlocked = false
                                 move_window(_wdata, 0, 0, diffX, 0)
+                            }
+                            else{
+                                if(!xBlocked){
+                                    xBlocked = true
+                                    move_window(_wdata, 0, 0, (new_width > desktop_width ? desktop_width : min_window_width) - _wdata.width, 0)
+                                }
+                            }
                             break
                         case act.left:
                             diffX = e.pageX - _wdata.left
                             neg = diffX * -1
-                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
+                            new_width = _wdata.width + neg
+                            if(new_width >= min_window_width && new_width <= desktop_width){
+                                xBlocked = false
                                 move_window(_wdata, diffX, 0, neg, 0)
+                            }
+                            else{
+                                if(!xBlocked){
+                                    xBlocked = true
+                                    diffX = _wdata.width - (new_width > desktop_width ? desktop_width : min_window_width)
+                                    move_window(_wdata, diffX, 0, diffX * -1, 0)
+                                }
+                            }
                             break
                         case act.bottom:
                             diffY = e.pageY - (_wdata.top + _wdata.height)
-                            if(_wdata.height + diffY >= min_window_height && _wdata.height + diffY <= desktop_height)
+                            new_height = _wdata.height + diffY
+                            if(new_height >= min_window_height && new_height <= desktop_height){
+                                yBlocked = false
                                 move_window(_wdata, 0, 0, 0, diffY)
+                            }
+                            else{
+                                if(!yBlocked){
+                                    yBlocked = true
+                                    move_window(_wdata, 0, 0, 0, (new_height > desktop_height ? desktop_height : min_window_height) - _wdata.height)
+                                }
+                            }
                             break
                         case act.top:
                             diffY = e.pageY - _wdata.top
                             neg = diffY * -1
-                            if(_wdata.height + neg >= min_window_height && _wdata.height + neg <= desktop_height)
+                            new_height = _wdata.height + neg
+                            if(new_height >= min_window_height && new_height <= desktop_height){
+                                yBlocked = false
                                 move_window(_wdata, 0, diffY, 0, neg)
+                            }
+                            else{
+                                if(!yBlocked){
+                                    yBlocked = true
+                                    diffY = _wdata.height - (new_height > desktop_height ? desktop_height : min_window_height)
+                                    move_window(_wdata, 0, diffY, 0, diffY * -1)
+                                }
+                            }
                             break
                         case act.left_top:
                             diffX = e.pageX - _wdata.left
                             neg = diffX * -1
-                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
-                                xGo = true
+                            new_width = _wdata.width + neg
+                            if(new_width >= min_window_width && new_width <= desktop_width)
+                                xBlocked = false
                             else
-                                xGo = false
+                            {
+                                if(!xBlocked){
+                                    xBlocked = true
+                                    diffX = _wdata.width - (new_width > desktop_width ? desktop_width : min_window_width)
+                                    neg = diffX * -1
+                                }
+                                else
+                                {
+                                    diffX = 0
+                                    neg = 0
+                                }
+                            }
                             diffY = e.pageY - _wdata.top
                             let neg2 = diffY * -1
-                            if(_wdata.height + neg2 >= min_window_height && _wdata.height + neg2 <= desktop_height)
-                                yGo = true
+                            new_height = _wdata.height + neg2
+                            if(new_height >= min_window_height && new_height <= desktop_height)
+                                yBlocked = false
                             else
-                                yGo = false
-                            move_window(_wdata, xGo?diffX:0, yGo?diffY:0, xGo?neg:0, yGo?neg2:0)
+                                {
+                                    if(!yBlocked){
+                                        yBlocked = true
+                                        diffY = _wdata.height - (new_height > desktop_height ? desktop_height : min_window_height)
+                                        neg2 = diffY * -1
+                                    }
+                                    else{
+                                        diffY = 0
+                                        neg2 = 0
+                                    }
+                                }
+                            move_window(_wdata, diffX, diffY, neg, neg2)
                             break
                         case act.left_bottom:
                             diffX = e.pageX - _wdata.left
                             neg = diffX * -1
-                            if(_wdata.width + neg >= min_window_width && _wdata.width + neg <= desktop_width)
-                                xGo = true
+                            new_width = _wdata.width + neg
+                            if(new_width >= min_window_width && new_width <= desktop_width)
+                                xBlocked = false
                             else
-                                xGo = false
+                                {
+                                    if(!xBlocked){
+                                        xBlocked = true
+                                        diffX = _wdata.width - (new_width > desktop_width ? desktop_width : min_window_width)
+                                        neg = diffX * -1
+                                    }
+                                    else{
+                                        diffX = 0
+                                        neg = 0
+                                    }
+                                }
                             diffY = e.pageY - (_wdata.top + _wdata.height)
-                            if(_wdata.height + diffY >= min_window_height && _wdata.height + diffY <= desktop_height)
-                                yGo = true
+                            new_height = _wdata.height + diffY
+                            if(new_height >= min_window_height && new_height <= desktop_height)
+                                yBlocked = false
                             else
-                                yGo = false
-                            move_window(_wdata, xGo?diffX:0, 0, xGo?neg:0, yGo?diffY:0)
+                                {
+                                    if(!yBlocked){
+                                        yBlocked = true
+                                        diffY = (new_height > desktop_height ? desktop_height : min_window_height) - _wdata.height
+                                    }
+                                    else
+                                        diffY = 0
+                                }
+                            move_window(_wdata, diffX, 0, neg, diffY)
                             break
                         case act.right_top:
                             diffX = e.pageX - (_wdata.left + _wdata.width)
-                            if(_wdata.width + diffX >= min_window_width && _wdata.width + diffX <= desktop_width)
-                                xGo = true
+                            new_width = _wdata.width + diffX
+                            if(new_width >= min_window_width && new_width <= desktop_width)
+                                xBlocked = false
                             else
-                                xGo = false
+                                {
+                                    if(!xBlocked){
+                                        xBlocked = true
+                                        diffX = (new_width > desktop_width ? desktop_width : min_window_width) - _wdata.width
+                                    }
+                                    else
+                                        diffX = 0
+                                }
                             diffY = e.pageY - _wdata.top
                             neg = diffY * -1
-                            if(_wdata.height + neg >= min_window_height && _wdata.height + neg <= desktop_height)
-                                yGo = true
+                            new_height = _wdata.height + neg
+                            if(new_height >= min_window_height && new_height <= desktop_height)
+                                yBlocked = false
                             else
-                                yGo = false
-                            move_window(_wdata, 0, yGo?diffY:0, xGo?diffX:0, yGo?neg:0)
+                                {
+                                    if(!yBlocked){
+                                        yBlocked = true
+                                        diffY = _wdata.height - (new_height > desktop_height ? desktop_height : min_window_height)
+                                        neg = diffY * -1
+                                    }
+                                    else{
+                                        diffY = 0
+                                        neg = 0
+                                    }
+                                }
+                            move_window(_wdata, 0, diffY, diffX, neg)
                             break
                         case act.right_bottom:
                             diffX = e.pageX - (_wdata.left + _wdata.width)
-                            if(_wdata.width + diffX >= min_window_width && _wdata.width + diffX <= desktop_width)
-                                xGo = true
+                            new_width = _wdata.width + diffX
+                            if(new_width >= min_window_width && new_width <= desktop_width)
+                                xBlocked = false
                             else
-                                xGo = false
+                                {
+                                    if(!xBlocked){
+                                        xBlocked = true
+                                        diffX = (new_width > desktop_width ? desktop_width : min_window_width) - _wdata.width
+                                    }
+                                    else
+                                        diffX = 0
+                                }
                             diffY = e.pageY - (_wdata.top + _wdata.height)
-                            if(_wdata.height + diffY >= min_window_height && _wdata.height + diffY <= desktop_height)
-                                yGo = true
+                            new_height = _wdata.height + diffY
+                            if(new_height >= min_window_height && new_height <= desktop_height)
+                                yBlocked = false
                             else
-                                yGo = false
-                            move_window(_wdata, 0, 0, xGo?diffX:0, yGo?diffY:0)
+                                {
+                                    if(!yBlocked){
+                                        yBlocked = true
+                                        diffY = (new_height > desktop_height ? desktop_height : min_window_height) - _wdata.height
+                                    }
+                                    else
+                                        diffY = 0
+                                }
+                            move_window(_wdata, 0, 0, diffX, diffY)
                             break
                     }
                 }
