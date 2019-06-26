@@ -55,6 +55,7 @@
                 }
             }
             var xBlocked, yBlocked
+            var iframes_disabled = false;
             function move_mouse(e, read = true){
                 if(read) _moveEvent = e
                 if(engaged && action != act.none && !locked && mouseon != null){
@@ -266,6 +267,10 @@
                     let right = _wdata.left + _wdata.width
                     if(_wdata != null){
                         if(e.pageX >= _wdata.left && e.pageX <= _wdata.left + gap){
+                            if(!iframes_disabled){
+                                $("iframe").css("pointer-events", "none")
+                                iframes_disabled = true
+                            }
                             x = e.pageX - _wdata.left
                             y = e.pageY - _wdata.top
                             if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + gap){
@@ -285,6 +290,10 @@
                             }
                         }
                         else if(e.pageX <= right && e.pageX >= right - gap){
+                            if(!iframes_disabled){
+                                $("iframe").css("pointer-events", "none")
+                                iframes_disabled = true
+                            }
                             x = e.pageX - _wdata.left
                             y = e.pageY - _wdata.top
                             if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + gap){
@@ -304,6 +313,10 @@
                             }
                         }
                         else if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + 30){
+                            if(!iframes_disabled){
+                                $("iframe").css("pointer-events", "none")
+                                iframes_disabled = true
+                            }
                             x = e.pageX - _wdata.left
                             y = e.pageY - _wdata.top
                             if(e.pageY <= _wdata.top + gap){
@@ -324,6 +337,10 @@
                             }
                         }
                         else if(e.pageY <= bottom && e.pageY >= bottom - gap){
+                            if(!iframes_disabled){
+                                $("iframe").css("pointer-events", "none")
+                                iframes_disabled = true
+                            }
                             x = e.pageX - _wdata.left
                             y = e.pageY - _wdata.top
                             // bottom
@@ -331,6 +348,10 @@
                             action = act.bottom
                         }
                         else{
+                            if(iframes_disabled){
+                                $("iframe").css("pointer-events", "auto")
+                                iframes_disabled = false
+                            }
                             // else
                             $(desktop).css("cursor","default")
                             action = act.none
