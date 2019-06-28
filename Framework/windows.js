@@ -55,7 +55,7 @@
                 }
             }
             var xBlocked, yBlocked
-            var iframes_disabled = false;
+            var iframes_disabled = false
             function move_mouse(e, read = true){
                 if(read) _moveEvent = e
                 if(engaged && action != act.none && !locked && mouseon != null){
@@ -269,6 +269,7 @@
                         if(e.pageX >= _wdata.left && e.pageX <= _wdata.left + gap){
                             if(!iframes_disabled){
                                 $("iframe").css("pointer-events", "none")
+                                $(desktop).css({"-webkit-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none"});
                                 iframes_disabled = true
                             }
                             x = e.pageX - _wdata.left
@@ -292,6 +293,7 @@
                         else if(e.pageX <= right && e.pageX >= right - gap){
                             if(!iframes_disabled){
                                 $("iframe").css("pointer-events", "none")
+                                $(desktop).css({"-webkit-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none"});
                                 iframes_disabled = true
                             }
                             x = e.pageX - _wdata.left
@@ -315,6 +317,7 @@
                         else if(e.pageY >= _wdata.top && e.pageY <= _wdata.top + 30){
                             if(!iframes_disabled){
                                 $("iframe").css("pointer-events", "none")
+                                $(desktop).css({"-webkit-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none"});
                                 iframes_disabled = true
                             }
                             x = e.pageX - _wdata.left
@@ -339,6 +342,7 @@
                         else if(e.pageY <= bottom && e.pageY >= bottom - gap){
                             if(!iframes_disabled){
                                 $("iframe").css("pointer-events", "none")
+                                $(desktop).css({"-webkit-user-select": "none", "-moz-user-select": "none", "-ms-user-select": "none", "user-select": "none"});
                                 iframes_disabled = true
                             }
                             x = e.pageX - _wdata.left
@@ -350,6 +354,7 @@
                         else{
                             if(iframes_disabled){
                                 $("iframe").css("pointer-events", "auto")
+                                $(desktop).css({"-webkit-user-select": "auto", "-moz-user-select": "auto", "-ms-user-select": "auto", "user-select": "auto"});
                                 iframes_disabled = false
                             }
                             // else
