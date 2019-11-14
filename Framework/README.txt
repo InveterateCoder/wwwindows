@@ -1,4 +1,4 @@
-Link windows.css to your HTML and include windows.js along with jQuerry.
+Include wwwwindows.js along with jQuerry.
 
 creating windows:
 
