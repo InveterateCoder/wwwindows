@@ -1,2 +1,2 @@
 # Web Windows
-Framework for creating windows on your web page.
+Framework to create windows on your web page.
